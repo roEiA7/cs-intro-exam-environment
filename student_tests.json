@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "Test One",
+      "input": "1",
+      "output": "Please enter a number:\nThe number 1 is odd!\n"
+    },
+    {
+      "name": "Test Two",
+      "input": "2",
+      "output": "Please enter a number:\nThe number 2 is odd!\n"
+    },
+    {
+      "name": "Another Test",
+      "input": "0",
+      "output": "Please enter a number:\nThe number 0 is even!\n"
+    }
+  ]
+}

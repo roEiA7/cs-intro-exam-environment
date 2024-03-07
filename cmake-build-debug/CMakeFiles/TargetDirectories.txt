@@ -1,0 +1,5 @@
+C:/Users/roeia/Documents/Workspace/CS/exam_environment/cmake-build-debug/CMakeFiles/exam_environment.dir
+C:/Users/roeia/Documents/Workspace/CS/exam_environment/cmake-build-debug/CMakeFiles/student_test.dir
+C:/Users/roeia/Documents/Workspace/CS/exam_environment/cmake-build-debug/CMakeFiles/test.dir
+C:/Users/roeia/Documents/Workspace/CS/exam_environment/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/roeia/Documents/Workspace/CS/exam_environment/cmake-build-debug/CMakeFiles/rebuild_cache.dir
