@@ -16,7 +16,7 @@ jobs:
         run: choco install ninja
       - uses: actions/checkout@v4
       - name: build
-        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc && cmake --build ./build -j 10 -Wall -Werror -pedantic-errors -lm -g && ls && ls build && mv student_test.exe build/student_test.exe
+        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build ./build -j 10 && ls && ls build && mv student_test.exe build/student_test.exe
       - name: Zip up output
         run: |
           cd build
