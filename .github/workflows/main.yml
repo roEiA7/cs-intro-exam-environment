@@ -16,9 +16,9 @@ jobs:
       - name: Zip up output
         run: |
           cd build
-          zip -r . *
+          Compress-Archive -Path . -DestinationPath ../student_test.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Windows
-          path: build
+          name: Upload Windows Zip
+          path: student_test.zip
