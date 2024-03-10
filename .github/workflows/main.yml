@@ -15,8 +15,12 @@ jobs:
       - name: Install ninja
         run: choco install ninja
       - uses: actions/checkout@v4
+      - run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ..
       - name: build
-        run: cmake .. -G Ninja && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && mkdir build && cmake --build .\build --target all -j 10 && ls && ls build
+        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target all -j 10 && ls && ls build
 
 #      - name: foo
 #        run: ls
