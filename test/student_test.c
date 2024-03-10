@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAIN_EXE "exam_environment.exe"
+#define MAIN_EXE "main.exe"
 #define TESTS_JSON_FILE_NAME "student_tests.json"
 #define INPUT_FILE_NAME "input.txt"
 #define EXPECTED_OUTPUT_FILE_NAME "expected_output.txt"
 #define ACTUAL_OUTPUT_FILE_NAME "output.txt"
 
-void printDivider() {
+void printDivider(void) {
     printf("\n\033[0;36m------------------------------------------------------------\033[0m\n");
 }
 
@@ -146,7 +146,7 @@ void printFailedTest(const char *test_name) {
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(cJSON *test) {
+int runTest(char *workdir, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -160,8 +160,29 @@ int runTest(cJSON *test) {
         return 0;
     }
 
+    // Build the path to the main.exe file
+    char *commandStr = malloc(
+            strlen("cmd /c ") +
+            strlen(workdir) + strlen("/") + strlen(MAIN_EXE)
+            + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
+            + strlen(ACTUAL_OUTPUT_FILE_NAME)
+            + 1);
+    if (!commandStr) {
+        printf("Error parsing main exec file path.\n");
+        return 0;
+    }
+    strcat(commandStr, "cmd /c ");
+    strcat(commandStr, workdir);
+    strcat(commandStr, "/");
+    strcat(commandStr, MAIN_EXE);
+    strcat(commandStr, " < ");
+    strcat(commandStr, INPUT_FILE_NAME);
+    strcat(commandStr,  " > ");
+    strcat(commandStr,  ACTUAL_OUTPUT_FILE_NAME);
+
     // Run executable
-    system("cmd /c " MAIN_EXE " < " INPUT_FILE_NAME " > " ACTUAL_OUTPUT_FILE_NAME);
+    system(commandStr);
+    free(commandStr);
 
     // Test outputs
     printDivider();
@@ -181,9 +202,19 @@ int runTest(cJSON *test) {
  * Function to get all tests from a JSON file
  * @return json tests array
  * */
-cJSON *getAllTestsFromJson() {
+cJSON *getAllTestsFromJson(char *workdir) {
+    // Build the path to the tests file
+    char *testsFilePath = malloc(strlen(workdir) + 1 + strlen(TESTS_JSON_FILE_NAME) + 1);
+    if (!testsFilePath) {
+        printf("Error parsing tests file path.\n");
+        return NULL;
+    }
+    testsFilePath = strcat(testsFilePath, workdir);
+    testsFilePath = strcat(testsFilePath, "/");
+    testsFilePath = strcat(testsFilePath, TESTS_JSON_FILE_NAME);
     // Read the JSON file
-    FILE *file = fopen(TESTS_JSON_FILE_NAME, "r");
+    FILE *file = fopen(testsFilePath, "r");
+    free(testsFilePath);
     if (file == NULL) {
         printf("Error opening JSON file.\n");
         return NULL;
@@ -227,14 +258,19 @@ cJSON *getAllTestsFromJson() {
     return tests;// Return the tests array
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // We expect 1 arg, the location of the workdir that has tests and main.exe
+    if (argc != 1) {
+        return 1;
+    }
     int failedCount = 0;
-    cJSON *tests = getAllTestsFromJson();
+    char *workdir = argv[0];
+    cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(test);
+        int isPassed = runTest(workdir, test);
         if (!isPassed) {
             failedCount++;
         }

@@ -1,0 +1,24 @@
+name: Build and Release
+
+on:
+  push:
+    {}
+#    tags:
+#      - '*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        run: sh compile.sh exe
+      - name: Zip up output
+        run: |
+          cd build/StandaloneOSX
+          zip -r build *
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows
+          path: build

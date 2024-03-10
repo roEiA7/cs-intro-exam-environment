@@ -1,3 +1,0 @@
-student_tests 1 0
----
-student_tests
