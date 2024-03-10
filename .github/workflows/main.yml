@@ -53,7 +53,7 @@ jobs:
           # This is only needed if the command `vcpkg install` must run at this step.
           # Instead it is highly suggested to let `run-cmake` to run vcpkg later on
           # using the vcpkg.cmake toolchain. The default is `false`.
-          runVcpkgInstall: true
+#          runVcpkgInstall: true
 
           # This is only needed if `runVpkgInstall` is `true`.
           # This glob expression used to locate the vcpkg.json and  use
