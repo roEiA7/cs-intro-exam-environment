@@ -32,7 +32,7 @@ jobs:
           cd build
           cmake -G Ninja ..
       - name: build
-        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target all -j 10 && ls build && ls build/student_test && cp build/student_test.exe LocalGradescope
+        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target all -j 10 && cp build/student_test* LocalGradescope
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
