@@ -141,12 +141,24 @@ void printFailedTest(const char *test_name) {
     fclose(actual_output_file);
 }
 
+char* extractProjectNameFromPath(char *workdir) {
+    int i = 0;
+    while (*(workdir+i) != '\0') {
+        if (*(workdir+i) == '\\' || *(workdir+i) == '/') {
+            workdir = workdir+i+1;
+        }
+        i++;
+    }
+    return workdir;
+}
+
 /**
  * Function to run test
+ * @param workdir project's workdir
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(char *workdir, char *projectName, cJSON *test) {
+int runTest(char *workdir, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -159,6 +171,8 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
         printf("Failed to write input and output to files.\n");
         return 0;
     }
+
+    char *projectName = extractProjectNameFromPath(workdir);
 
     // Build the path to the main.exe file
     char *commandStr = malloc(
@@ -260,19 +274,19 @@ cJSON *getAllTestsFromJson(char *workdir) {
 }
 
 int main(int argc, char* argv[]) {
-    // We expect 2 args, the location of the workdir that has tests and the project's name
-    if (argc != 2) {
+    // We expect 1 arg, the location of the workdir that has tests and exe in its build dir
+    // project name dir must have the same name as the exe
+    if (argc != 1) {
         return 1;
     }
     int failedCount = 0;
     char *workdir = argv[0];
-    char *projectName = argv[1];
     cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(workdir, projectName, test);
+        int isPassed = runTest(workdir, test);
         if (!isPassed) {
             failedCount++;
         }
