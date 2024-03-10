@@ -63,7 +63,7 @@ jobs:
           # contains backslashes that would be misinterpreted. Instead
           # compose a value relative to the root of the repository using
         # `**/path/from/root/of/repo/to/vcpkg.json` to match the desired `vcpkg.json`.
-          vcpkgJsonGlob: '**/vcpkg.json'
+#          vcpkgJsonGlob: '**/vcpkg.json'
       - name: Run CMake consuming CMakePreset.json and run vcpkg to build packages
         uses: lukka/run-cmake@v10
         with:
