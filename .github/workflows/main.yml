@@ -17,6 +17,8 @@ jobs:
 #      - uses: actions/checkout@v4
 #      - name: build
 #        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && mkdir build && cmake --build ./build -j 10 && ls && ls build
+      - name: foo
+        run: ls && cat CMakeLists.txt
       - name: Build & Test
         uses: ashutoshvarma/action-cmake-build@master
         with:
