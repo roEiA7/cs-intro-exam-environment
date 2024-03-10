@@ -15,8 +15,8 @@ jobs:
         run: sh compile.sh exe
       - name: Zip up output
         run: |
-          cd build/StandaloneOSX
-          zip -r build *
+          cd build
+          zip -r . *
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
