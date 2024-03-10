@@ -14,7 +14,7 @@ jobs:
         run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
       - uses: actions/checkout@v4
       - name: build
-        run: cmake build . -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && ls build && mv student_test.exe build/student_test.exe
+        run: cmake build . -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && ls && mv student_test.exe build/student_test.exe
       - name: Zip up output
         run: |
           cd build
