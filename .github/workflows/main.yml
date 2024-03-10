@@ -16,7 +16,7 @@ jobs:
         run: choco install ninja
       - uses: actions/checkout@v4
       - name: build
-        run: cmake -S. -Bbuild && cmake --build . -j 10 && ls && ls build && mv student_test.exe build/student_test.exe
+        run: cmake -S. -Bbuild && cmake --build . && ls && ls build && mv student_test.exe build/student_test.exe
       - name: Zip up output
         run: |
           cd build
