@@ -146,7 +146,7 @@ void printFailedTest(const char *test_name) {
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(char *workdir, cJSON *test) {
+int runTest(char *workdir, char *projectName, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -163,7 +163,7 @@ int runTest(char *workdir, cJSON *test) {
     // Build the path to the main.exe file
     char *commandStr = malloc(
             strlen("cmd /c ") +
-            strlen(workdir) + strlen("/") + strlen(MAIN_EXE)
+            strlen(workdir) + strlen("/cmake-build-debug") + strlen(projectName) + strlen(".exe")
             + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
             + strlen(ACTUAL_OUTPUT_FILE_NAME)
             + 1);
@@ -173,8 +173,9 @@ int runTest(char *workdir, cJSON *test) {
     }
     strcat(commandStr, "cmd /c ");
     strcat(commandStr, workdir);
-    strcat(commandStr, "/");
-    strcat(commandStr, MAIN_EXE);
+    strcat(commandStr, "/cmake-build-debug");
+    strcat(commandStr, projectName);
+    strcat(commandStr, ".exe");
     strcat(commandStr, " < ");
     strcat(commandStr, INPUT_FILE_NAME);
     strcat(commandStr,  " > ");
@@ -259,18 +260,19 @@ cJSON *getAllTestsFromJson(char *workdir) {
 }
 
 int main(int argc, char* argv[]) {
-    // We expect 1 arg, the location of the workdir that has tests and main.exe
-    if (argc != 1) {
+    // We expect 2 args, the location of the workdir that has tests and the project's name
+    if (argc != 2) {
         return 1;
     }
     int failedCount = 0;
     char *workdir = argv[0];
+    char *projectName = argv[1];
     cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(workdir, test);
+        int isPassed = runTest(workdir, projectName, test);
         if (!isPassed) {
             failedCount++;
         }
