@@ -1,0 +1,40 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest ] # macos-latest,
+    steps:
+      - name: Install CMake and Ninja
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+      - name: Install CMake and Ninja
+        if: runner.os == 'Windows'
+        run: choco install ninja cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      - name: Install CMake and Ninja
+        if: runner.os == 'macos-latest'
+        run: |
+          brew install cmake ninja
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir build
+          mkdir LocalGradescope
+          cd build
+          cmake -G Ninja ..
+      - name: build
+        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target student_test -j 10 && cp build/student_test* LocalGradescope
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ runner.os }} Local Gradescope
+          path: LocalGradescope

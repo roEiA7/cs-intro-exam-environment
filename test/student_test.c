@@ -3,13 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAIN_EXE "exam_environment.exe"
+#if defined(_WIN32)
+    #define EXE_EXT ".exe"
+#else
+    #define EXE_EXT ""
+#endif
+#if defined(_WIN32)
+    #define CMD_EXEC_CMD "cmd /c "
+#else
+    #define CMD_EXEC_CMD "bash -c "
+#endif
+
+#define BUILD_DIR "/cmake-build-debug/"
 #define TESTS_JSON_FILE_NAME "student_tests.json"
 #define INPUT_FILE_NAME "input.txt"
 #define EXPECTED_OUTPUT_FILE_NAME "expected_output.txt"
 #define ACTUAL_OUTPUT_FILE_NAME "output.txt"
 
-void printDivider() {
+void printDivider(void) {
     printf("\n\033[0;36m------------------------------------------------------------\033[0m\n");
 }
 
@@ -143,10 +154,12 @@ void printFailedTest(const char *test_name) {
 
 /**
  * Function to run test
+ * @param workdir project's workdir
+ * @param workdir project's name
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(cJSON *test) {
+int runTest(char *workdir, char *projectName, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -160,8 +173,32 @@ int runTest(cJSON *test) {
         return 0;
     }
 
+    // Build the path to the main.exe file
+    char *commandStr = malloc(
+            strlen(CMD_EXEC_CMD) +
+            strlen(workdir) + strlen(BUILD_DIR) + strlen(projectName) + strlen(EXE_EXT)
+            + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
+            + strlen(ACTUAL_OUTPUT_FILE_NAME)
+            + strlen("\0"));
+    if (!commandStr) {
+        printf("Error parsing main exec file path.\n");
+        return 0;
+    }
+    // Mark first idx as target for concat's beginning
+    commandStr[0] = '\0';
+    strcat(commandStr, CMD_EXEC_CMD);
+    strcat(commandStr, workdir);
+    strcat(commandStr, BUILD_DIR);
+    strcat(commandStr, projectName);
+    strcat(commandStr, EXE_EXT);
+    strcat(commandStr, " < ");
+    strcat(commandStr, INPUT_FILE_NAME);
+    strcat(commandStr,  " > ");
+    strcat(commandStr,  ACTUAL_OUTPUT_FILE_NAME);
+
     // Run executable
-    system("cmd /c " MAIN_EXE " < " INPUT_FILE_NAME " > " ACTUAL_OUTPUT_FILE_NAME);
+    system(commandStr);
+    free(commandStr);
 
     // Test outputs
     printDivider();
@@ -179,11 +216,25 @@ int runTest(cJSON *test) {
 
 /**
  * Function to get all tests from a JSON file
+ * @param workdir Tested project's workdir
  * @return json tests array
  * */
-cJSON *getAllTestsFromJson() {
+cJSON *getAllTestsFromJson(char *workdir) {
+    // Build the path to the tests file
+    char *testsFilePath = malloc(strlen(workdir) + strlen("/")
+                                 + strlen(TESTS_JSON_FILE_NAME) + strlen("\0"));
+    if (!testsFilePath) {
+        printf("Error parsing tests file path.\n");
+        return NULL;
+    }
+    // Mark first idx as target for concat's beginning
+    testsFilePath[0] = '\0';
+    testsFilePath = strcat(testsFilePath, workdir);
+    testsFilePath = strcat(testsFilePath, "/");
+    testsFilePath = strcat(testsFilePath, TESTS_JSON_FILE_NAME);
     // Read the JSON file
-    FILE *file = fopen(TESTS_JSON_FILE_NAME, "r");
+    FILE *file = fopen(testsFilePath, "r");
+    free(testsFilePath);
     if (file == NULL) {
         printf("Error opening JSON file.\n");
         return NULL;
@@ -227,14 +278,23 @@ cJSON *getAllTestsFromJson() {
     return tests;// Return the tests array
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // We expect 3 args, first is this program's exe path,
+    // second is the location of the workdir that has tests,
+    // third is the project's name
+    if (argc != 3) {
+        printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d\n", argc);
+        return 1;
+    }
     int failedCount = 0;
-    cJSON *tests = getAllTestsFromJson();
+    char *workdir = argv[1];
+    char *projectName = argv[2];
+    cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(test);
+        int isPassed = runTest(workdir, projectName, test);
         if (!isPassed) {
             failedCount++;
         }

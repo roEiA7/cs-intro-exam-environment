@@ -1,2 +1,0 @@
-Please enter a number:
-The number 0 is even!
