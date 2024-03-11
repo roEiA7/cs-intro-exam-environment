@@ -14,7 +14,7 @@
     #define CMD_EXEC_CMD "bash -c "
 #endif
 
-#define BUILD_DIR "/cmake-build-debug"
+#define BUILD_DIR "/cmake-build-debug/"
 #define TESTS_JSON_FILE_NAME "student_tests.json"
 #define INPUT_FILE_NAME "input.txt"
 #define EXPECTED_OUTPUT_FILE_NAME "expected_output.txt"
@@ -178,11 +178,13 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
             strlen(workdir) + strlen(BUILD_DIR) + strlen(projectName) + strlen(EXE_EXT)
             + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
             + strlen(ACTUAL_OUTPUT_FILE_NAME)
-            + 1);
+            + strlen("\0"));
     if (!commandStr) {
         printf("Error parsing main exec file path.\n");
         return 0;
     }
+    // Mark first idx as target for concat's beginning
+    commandStr[0] = '\0';
     strcat(commandStr, CMD_EXEC_CMD);
     strcat(commandStr, workdir);
     strcat(commandStr, BUILD_DIR);
@@ -217,11 +219,14 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
  * */
 cJSON *getAllTestsFromJson(char *workdir) {
     // Build the path to the tests file
-    char *testsFilePath = malloc(strlen(workdir) + 1 + strlen(TESTS_JSON_FILE_NAME) + 1);
+    char *testsFilePath = malloc(strlen(workdir) + strlen("/")
+                                 + strlen(TESTS_JSON_FILE_NAME) + strlen("\0"));
     if (!testsFilePath) {
         printf("Error parsing tests file path.\n");
         return NULL;
     }
+    // Mark first idx as target for concat's beginning
+    testsFilePath[0] = '\0';
     testsFilePath = strcat(testsFilePath, workdir);
     testsFilePath = strcat(testsFilePath, "/");
     testsFilePath = strcat(testsFilePath, TESTS_JSON_FILE_NAME);
@@ -276,7 +281,7 @@ int main(int argc, char* argv[]) {
     // second is the location of the workdir that has tests,
     // third is the project's name
     if (argc != 3) {
-        printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d", argc);
+        printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d\n", argc);
         return 1;
     }
     int failedCount = 0;
