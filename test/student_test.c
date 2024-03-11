@@ -3,7 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAIN_EXE "main.exe"
+#if defined(_WIN32)
+    #define EXE_EXT ".exe"
+#else
+    #define EXE_EXT ""
+#endif
+#if defined(_WIN32)
+    #define CMD_EXEC_CMD "cmd /c "
+#else
+    #define CMD_EXEC_CMD "bash -c "
+#endif
+
+#define BUILD_DIR "/cmake-build-debug"
 #define TESTS_JSON_FILE_NAME "student_tests.json"
 #define INPUT_FILE_NAME "input.txt"
 #define EXPECTED_OUTPUT_FILE_NAME "expected_output.txt"
@@ -141,24 +152,13 @@ void printFailedTest(const char *test_name) {
     fclose(actual_output_file);
 }
 
-char* extractProjectNameFromPath(char *workdir) {
-    int i = 0;
-    while (*(workdir+i) != '\0') {
-        if (*(workdir+i) == '\\' || *(workdir+i) == '/') {
-            workdir = workdir+i+1;
-        }
-        i++;
-    }
-    return workdir;
-}
-
 /**
  * Function to run test
  * @param workdir project's workdir
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(char *workdir, cJSON *test) {
+int runTest(char *workdir, char *projectName, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -172,12 +172,10 @@ int runTest(char *workdir, cJSON *test) {
         return 0;
     }
 
-    char *projectName = extractProjectNameFromPath(workdir);
-
     // Build the path to the main.exe file
     char *commandStr = malloc(
-            strlen("cmd /c ") +
-            strlen(workdir) + strlen("/cmake-build-debug") + strlen(projectName) + strlen(".exe")
+            strlen(CMD_EXEC_CMD) +
+            strlen(workdir) + strlen(BUILD_DIR) + strlen(projectName) + strlen(EXE_EXT)
             + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
             + strlen(ACTUAL_OUTPUT_FILE_NAME)
             + 1);
@@ -185,11 +183,11 @@ int runTest(char *workdir, cJSON *test) {
         printf("Error parsing main exec file path.\n");
         return 0;
     }
-    strcat(commandStr, "cmd /c ");
+    strcat(commandStr, CMD_EXEC_CMD);
     strcat(commandStr, workdir);
-    strcat(commandStr, "/cmake-build-debug");
+    strcat(commandStr, BUILD_DIR);
     strcat(commandStr, projectName);
-    strcat(commandStr, ".exe");
+    strcat(commandStr, EXE_EXT);
     strcat(commandStr, " < ");
     strcat(commandStr, INPUT_FILE_NAME);
     strcat(commandStr,  " > ");
@@ -274,19 +272,20 @@ cJSON *getAllTestsFromJson(char *workdir) {
 }
 
 int main(int argc, char* argv[]) {
-    // We expect 1 arg, the location of the workdir that has tests and exe in its build dir
-    // project name dir must have the same name as the exe
-    if (argc != 1) {
+    // We expect 2 args, the location of the workdir that has tests and the project's name
+    if (argc != 2) {
+        printf("Bad Usage of local tester, make sure project folder and name are passed properly.");
         return 1;
     }
     int failedCount = 0;
     char *workdir = argv[0];
+    char *projectName = argv[1];
     cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(workdir, test);
+        int isPassed = runTest(workdir, projectName, test);
         if (!isPassed) {
             failedCount++;
         }
