@@ -272,14 +272,16 @@ cJSON *getAllTestsFromJson(char *workdir) {
 }
 
 int main(int argc, char* argv[]) {
-    // We expect 2 args, the location of the workdir that has tests and the project's name
-    if (argc != 2) {
-        printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total arg passed: %d", argc);
+    // We expect 3 args, first is this program's exe path,
+    // second is the location of the workdir that has tests,
+    // third is the project's name
+    if (argc != 3) {
+        printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d", argc);
         return 1;
     }
     int failedCount = 0;
-    char *workdir = argv[0];
-    char *projectName = argv[1];
+    char *workdir = argv[1];
+    char *projectName = argv[2];
     cJSON *tests = getAllTestsFromJson(workdir);
 
     // Run all tests
