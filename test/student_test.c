@@ -155,6 +155,7 @@ void printFailedTest(const char *test_name) {
 /**
  * Function to run test
  * @param workdir project's workdir
+ * @param workdir project's name
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
@@ -215,6 +216,7 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
 
 /**
  * Function to get all tests from a JSON file
+ * @param workdir Tested project's workdir
  * @return json tests array
  * */
 cJSON *getAllTestsFromJson(char *workdir) {
