@@ -5,6 +5,9 @@ on:
     tags:
       - '*'
 
+env:
+  GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -38,3 +41,18 @@ jobs:
         with:
           name: ${{ runner.os }} Local Gradescope
           path: LocalGradescope
+      - name: Zip up output
+        if: runner.os == 'Windows'
+        run: |
+          cd LocalGradescope
+          Compress-Archive -Path . -DestinationPath ../LocalGradescope${{ runner.os }}-${{ github.ref_name }}.zip
+      - name: Zip up output
+        if: runner.os != 'Windows'
+        run: |
+          cd LocalGradescope
+          zip -r ../LocalGradescope${{ runner.os }}-${{ github.ref_name }}.zip *
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ env.GIT_ACCESS_TOKEN }}
+          files: LocalGradescope${{ runner.os }}-${{ github.ref_name }}.zip
