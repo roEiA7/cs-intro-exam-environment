@@ -4,17 +4,11 @@
 #include <string.h>
 
 #if defined(_WIN32)
-    #define EXE_EXT ".exe"
-#else
-    #define EXE_EXT ""
-#endif
-#if defined(_WIN32)
     #define CMD_EXEC_CMD "cmd /c "
 #else
     #define CMD_EXEC_CMD "bash -c "
 #endif
 
-#define BUILD_DIR "/cmake-build-debug/"
 #define TESTS_JSON_FILE_NAME "student_tests.json"
 #define INPUT_FILE_NAME "input.txt"
 #define EXPECTED_OUTPUT_FILE_NAME "expected_output.txt"
@@ -154,12 +148,11 @@ void printFailedTest(const char *test_name) {
 
 /**
  * Function to run test
- * @param workdir project's workdir
- * @param workdir project's name
+ * @param executablePath Executable's path
  * @param test {name, input, output}
  * @return 1 if test passed
  * */
-int runTest(char *workdir, char *projectName, cJSON *test) {
+int runTest(char *executablePath, cJSON *test) {
     // Parse test properties
     char *name = cJSON_GetObjectItemCaseSensitive(test, "name")->valuestring;
     cJSON *input = cJSON_GetObjectItemCaseSensitive(test, "input");
@@ -176,7 +169,7 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
     // Build the path to the main.exe file
     char *commandStr = malloc(
             strlen(CMD_EXEC_CMD) +
-            strlen(workdir) + strlen(BUILD_DIR) + strlen(projectName) + strlen(EXE_EXT)
+            strlen(executablePath)
             + strlen( " < ") + strlen(INPUT_FILE_NAME) + strlen(" > ")
             + strlen(ACTUAL_OUTPUT_FILE_NAME)
             + strlen("\0"));
@@ -187,10 +180,7 @@ int runTest(char *workdir, char *projectName, cJSON *test) {
     // Mark first idx as target for concat's beginning
     commandStr[0] = '\0';
     strcat(commandStr, CMD_EXEC_CMD);
-    strcat(commandStr, workdir);
-    strcat(commandStr, BUILD_DIR);
-    strcat(commandStr, projectName);
-    strcat(commandStr, EXE_EXT);
+    strcat(commandStr, executablePath);
     strcat(commandStr, " < ");
     strcat(commandStr, INPUT_FILE_NAME);
     strcat(commandStr,  " > ");
@@ -278,18 +268,20 @@ cJSON *getAllTestsFromJson(char *workdir) {
     return tests;// Return the tests array
 }
 
+// ALWAYS RETURN 0, WE DON'T WANT TO PREVENT NEXT PROGRAM IN CHAIN FROM RUNNING!!
 int main(int argc, char* argv[]) {
     // We expect 3 args, first is this program's exe path,
     // second is the location of the workdir that has tests,
-    // third is the project's name
+    // third is the executable's path
     if (argc != 3) {
         printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d\n", argc);
         return 0;
     }
     int failedCount = 0;
     char *workdir = argv[1];
-    char *projectName = argv[2];
+    char *executablePath = argv[2];
     cJSON *tests = getAllTestsFromJson(workdir);
+    // If test file not found or failed to open, stop program
     if (tests == NULL) {
         return 0;
     }
@@ -297,7 +289,7 @@ int main(int argc, char* argv[]) {
     // Run all tests
     cJSON *test;
     cJSON_ArrayForEach(test, tests) {
-        int isPassed = runTest(workdir, projectName, test);
+        int isPassed = runTest(executablePath, test);
         if (!isPassed) {
             failedCount++;
         }

@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest ] # macos-latest,
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
     steps:
       - name: Install CMake and Ninja
         if: runner.os == 'Linux'
@@ -34,7 +34,11 @@ jobs:
           cd build
           cmake -G Ninja ..
       - name: build
+        if: runner.os != 'macos-latest'
         run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target student_test -j 10 && cp build/student_test* LocalGradescope
+      - name: build
+        if: runner.os == 'macos-latest'
+        run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -g" && cmake --build build --target student_test -j 10 && cp build/student_test* LocalGradescope
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
