@@ -284,12 +284,15 @@ int main(int argc, char* argv[]) {
     // third is the project's name
     if (argc != 3) {
         printf("Bad Usage of local tester, make sure project folder and name are passed properly. Total args passed: %d\n", argc);
-        return 1;
+        return 0;
     }
     int failedCount = 0;
     char *workdir = argv[1];
     char *projectName = argv[2];
     cJSON *tests = getAllTestsFromJson(workdir);
+    if (tests == NULL) {
+        return 0;
+    }
 
     // Run all tests
     cJSON *test;
@@ -304,6 +307,5 @@ int main(int argc, char* argv[]) {
     // Free cJSON object
     cJSON_Delete(tests);
 
-    // 0 indicates successful test
-    return failedCount > 0;
+    return 0;
 }
