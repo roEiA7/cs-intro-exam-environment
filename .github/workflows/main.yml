@@ -37,7 +37,7 @@ jobs:
         run: cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_C_FLAGS="-Wall -Werror -pedantic-errors -lm -g" && cmake --build build --target student_test -j 10 && cp build/student_test* LocalGradescope
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }} Local Gradescope
           path: LocalGradescope
@@ -52,7 +52,7 @@ jobs:
           cd LocalGradescope
           zip -r ../LocalGradescope${{ runner.os }}-${{ github.ref_name }}.zip *
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           token: ${{ env.GIT_ACCESS_TOKEN }}
           files: LocalGradescope${{ runner.os }}-${{ github.ref_name }}.zip
